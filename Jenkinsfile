@@ -1,31 +1,19 @@
 pipeline {
-  agent {
-    docker {
-      image 'python:3.9'
-      // optional: user root, damit pip ohne sudo läuft
-      args '-u root:root'
-    }
-  }
+  agent any
 
   stages {
-    stage('Checkout') {
+    stage('Build & Test in Docker') {
       steps {
-        checkout scm
-      }
-    }
-    stage('Install Dependencies') {
-      steps {
-        sh 'pip install pyflakes pytest'
-      }
-    }
-    stage('Lint') {
-      steps {
-        sh 'pyflakes *.py'
-      }
-    }
-    stage('Test') {
-      steps {
-        sh 'pytest --maxfail=1 --disable-warnings -q'
+        script {
+          def img = docker.image('python:3.9')
+          img.pull()
+          img.inside('-u root:root') {
+            checkout scm
+            sh 'pip install pyflakes pytest'
+            sh 'pyflakes *.py'
+            sh 'pytest --maxfail=1 --disable-warnings -q'
+          }
+        }
       }
     }
   }
