@@ -1,5 +1,11 @@
 pipeline {
-  agent any
+  agent {
+    docker {
+      image 'python:3.9'
+      // optional: user root, damit pip ohne sudo läuft
+      args '-u root:root'
+    }
+  }
 
   stages {
     stage('Checkout') {
@@ -33,4 +39,3 @@ pipeline {
     }
   }
 }
-
